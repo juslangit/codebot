@@ -193,13 +193,13 @@ NOTES = [
 # (#FFB040). Light mode keeps the same two accents on paper so the page is readable in a
 # bright room; dark mode is the game's own palette.
 FONTS = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap"
-LIGHT = """--ground: #F4F6FA; --surface: #FFFFFF; --ink: #10141F; --muted: #59617A; --line: #DCE2ED;
-  --accent: #0F7A85; --accent-soft: #DDF3F5; --flag: #FFB040; --flag-ink: #2A1B05; --done: #16795F;
+LIGHT = """--ground: #FAF7F2; --surface: #FFFFFF; --ink: #2B2622; --muted: #6B6259; --line: #E7E1D8;
+  --accent: #2F6BB0; --accent-soft: #D6E6FA; --flag: #FFEEC9; --flag-ink: #A97B12; --done: #2F7A5C;
   --display: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   --heading-case: none;"""
-DARK = """--ground: #0E1220; --surface: #161C2A; --ink: #E8F0FF; --muted: #96A6C2; --line: #2C3654;
-  --accent: #40D6E0; --accent-soft: #14343A; --done: #68DE8A;"""
+DARK = """--ground: #FAF7F2; --surface: #FFFFFF; --ink: #2B2622; --muted: #6B6259; --line: #E7E1D8;
+  --accent: #2F6BB0; --accent-soft: #D6E6FA; --done: #2F7A5C;"""
 
 
 # ============================== engine: the same in every game ==============================
@@ -659,8 +659,8 @@ TEMPLATE = """<!doctype html>
 <link rel="stylesheet" href="{{FONTS}}">
 <style>
 :root { {{LIGHT}} color-scheme: light; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { {{DARK}} color-scheme: dark; } }
-:root[data-theme="dark"] { {{DARK}} color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="light"]) { {{DARK}} color-scheme: light; } }
+:root[data-theme="dark"] { {{DARK}} color-scheme: light; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
