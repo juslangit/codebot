@@ -126,7 +126,7 @@ details.fold > div { padding: 2px 0 18px 22px; }
   <p class="eyebrow"><b>Codebot</b><span>Project record · built 2026-09-17 from main</span></p>
   <h1>Codebot</h1>
   <p class="thesis">A Roblox game where you learn Luau by writing it. Your code is the controller: there is no joystick, you write <code>move()</code> and a robot walks one tile. Rooms are ordered so each introduces exactly one new idea, and other players solve the same room beside you with their robots visible. It exists because 4.38 million visits to a single-player lesson reader prove the demand and prove nobody stays.</p>
-  <div class="stats"><div class="stat"><b>276</b><span>Checks</span></div><div class="stat"><b>8</b><span>Rooms</span></div><div class="stat"><b>3379</b><span>Lines of Luau</span></div><div class="stat"><b>1495</b><span>Lines of interpreter</span></div><div class="stat"><b>6</b><span>Decisions</span></div><div class="stat"><b>6</b><span>Commits</span></div></div>
+  <div class="stats"><div class="stat"><b>276</b><span>Checks</span></div><div class="stat"><b>8</b><span>Rooms</span></div><div class="stat"><b>3412</b><span>Lines of Luau</span></div><div class="stat"><b>1495</b><span>Lines of interpreter</span></div><div class="stat"><b>6</b><span>Decisions</span></div><div class="stat"><b>8</b><span>Commits</span></div></div>
   
 </header>
 <section class="chapter notes" id="overview">
@@ -343,7 +343,7 @@ details.fold > div { padding: 2px 0 18px 22px; }
 </div></details></div>
 </section>
 <section class="chapter notes" id="milestones">
-  <p class="kicker">03-milestones.md · 6 sections <button class="unfold" type="button" data-for="milestones">Open all</button></p>
+  <p class="kicker">03-milestones.md · 8 sections <button class="unfold" type="button" data-for="milestones">Open all</button></p>
   <h2>Milestones</h2>
   <div class="prose"><blockquote>Status: <code>not started</code> · <code>in progress</code> · <code>done</code> · <code>stalled</code> · <code>cancelled</code></blockquote>
 <details class="fold" id="milestones-progress-board"><summary><span>Progress board</span></summary><div>
@@ -352,7 +352,7 @@ details.fold > div { padding: 2px 0 18px 22px; }
 <tr><td>M2</td><td>Parser</td><td>2026-09-17</td><td>done</td><td>61 headless checks; 97 across the interpreter so far</td></tr>
 <tr><td>M3</td><td>Stepping interpreter</td><td>2026-09-17</td><td>done</td><td>55 checks; 152 across the interpreter. Phase 1 complete</td></tr>
 <tr><td>M4</td><td>Robot in a room</td><td>2026-09-17</td><td>done</td><td>All eight rooms, robot, camera and panel, built by code. 80 more checks</td></tr>
-<tr><td>M5</td><td>Touch editor</td><td></td><td>not started</td><td>Tap-to-build token palette, tested on a real phone</td></tr>
+<tr><td>M5</td><td>Touch editor</td><td>2026-09-17</td><td>done</td><td>Palette built, 44 more checks. <strong>Still to do: try it on a real phone</strong></td></tr>
 <tr><td>M6</td><td>The room ladder</td><td></td><td>not started</td><td>All 8 rooms plus DataStore progress</td></tr>
 <tr><td>M7</td><td>Multiplayer</td><td></td><td>not started</td><td>8 players per server, every robot visible</td></tr>
 <tr><td>M8</td><td>Ship</td><td></td><td>not started</td><td>Thumbnail, searchable description, publish</td></tr>
@@ -415,6 +415,23 @@ details.fold > div { padding: 2px 0 18px 22px; }
 <tr><td>2026-09-17</td><td>M2 Parser</td><td>An error message that names a line and an error that points at a line are two different things, and the player only sees the second one</td></tr>
 <tr><td>2026-09-17</td><td>M3 Stepping interpreter</td><td>Lune and Roblox disagree about errors thrown across a coroutine boundary. Catching inside the coroutine removes the disagreement instead of betting on it</td></tr>
 </tbody></table></div>
+</div></details>
+<details class="fold" id="milestones-m5-touch-editor-2026-09-17-untested-on-a-phone"><summary><span>M5 — Touch editor  ✅ 2026-09-17 (untested on a phone)</span></summary><div>
+<p><strong>Goal:</strong> Write code without a keyboard. <strong>Done criteria:</strong></p>
+<ul>
+<li><span class="box done">done</span> <code>CodeBuilder.luau</code> assembles tapped pieces into real Luau, with correct spacing</li>
+<li><span class="box done">done</span> It indents automatically, so the player is shown laid-out code without being taught to lay it out</li>
+<li><span class="box done">done</span> DELETE removes a whole piece, not a character</li>
+<li><span class="box done">done</span> <code>Palette.luau</code> gives each room only the pieces it needs, growing room by room</li>
+<li><span class="box done">done</span> A test that every room's own solution is buildable from that room's buttons</li>
+<li><span class="box done">done</span> A TYPE toggle for keyboards, and typed text converts back into pieces</li>
+<li><span class="box done">done</span> The panel is laid out from the height of the screen, not in fixed pixels</li>
+<li><span class="box">to do</span> <strong>Actually tried on a phone.</strong> Nothing below this line is proven until it is.</li>
+</ul>
+<p><strong>Learned:</strong> Holding the taps rather than the finished string is what makes DELETE make sense: tapping <code>move()</code> once and deleting it once are symmetrical, and deleting characters never would be. The auto-indent came out of the same design almost for free, and it is the part most likely to matter — a beginner who has never been taught to indent will still open Studio with code that looks right.</p>
+</div></details>
+<details class="fold" id="milestones-m6-m8"><summary><span>M6..M8</span></summary><div>
+<p>Still as planned in <code>02-planning.md</code>. The ladder and DataStore saves come next, then multiplayer, then shipping.</p>
 </div></details></div>
 </section>
 <section class="chapter notes" id="decisions">
@@ -528,8 +545,11 @@ lune run tests/Tokenizer.spec.luau   # should print &quot;all 36 checks passed&q
 <tr><td>Watch a program run, step by step</td><td><code>lune run tools/run_code.luau '&lt;code&gt;'</code></td></tr>
 <tr><td>Format</td><td><code>stylua src/ tests/</code></td></tr>
 <tr><td>Lint</td><td><code>selene src/</code></td></tr>
-<tr><td>Live-sync into Studio</td><td><code>rojo serve</code>, then connect from the Rojo plugin</td></tr>
+<tr><td>Live-sync into Studio</td><td><code>rojo serve</code> (port 34872, the plugin's default), then Plugins → Rojo → Connect</td></tr>
 <tr><td>Build a place file, Studio closed</td><td><code>rojo build -o codebot.rbxlx</code></td></tr>
+<tr><td>Open it in Studio</td><td><code>rojo build -o codebot.rbxlx &amp;&amp; open codebot.rbxlx</code></td></tr>
+<tr><td>Rebuild the project record</td><td><code>python3 tools/docs/build_docs.py</code></td></tr>
+<tr><td>Rebuild it and publish</td><td><code>python3 tools/docs/build_docs.py --publish</code></td></tr>
 </tbody></table></div>
 </div></details>
 <details class="fold" id="methods-folder-structure"><summary><span>Folder structure</span></summary><div>
@@ -554,11 +574,17 @@ tools/                    scripts</code></pre>
 <p>The interpreter avoids the question: the coroutine body wraps itself in <code>pcall</code> and stores the caught error on the machine, where <code>step()</code> reads it. Yielding from inside a <code>pcall</code> is fine in Luau, so stepping is unaffected. Verified 2026-09-17.</p>
 <h4 id="methods-the-interpreter-never-sees-roblox">The interpreter never sees Roblox</h4>
 <p>Nothing under <code>src/shared/Interpreter/</code> may touch a Roblox API. That is what lets the hardest part of the game be built and tested from the terminal, and what makes the test suite fast.</p>
+<h4 id="methods-the-project-record">The project record</h4>
+<p><code>docs/index.html</code> is generated from this knowledge base by <code>tools/docs/build_docs.py</code> and published to <a href="https://luqman-docs.netlify.app/codebot/">https://luqman-docs.netlify.app/codebot/</a>. It must be rebuilt and republished whenever the game changes, which is the standing rule for every one of Luqman's games.</p>
+<p>Codebot's copy differs from the other games' in two ways. Its screenshots cannot be taken by a script, because Studio is not a browser — they are captured by hand and dropped into <code>docs/shots/</code>, and any named picture that is not there yet shows as a labelled gap, so the <code>GALLERIES</code> list doubles as the list of pictures still to take. And its <code>header_comment()</code> understands Luau's <code>--</code> and <code>--[[ ]]</code> comments, which the shared engine did not.</p>
+<p>The cover's check count is produced by running the suites, not by counting lines that look like checks, so it cannot drift away from the truth.</p>
 </div></details>
 <details class="fold" id="methods-gotchas-traps"><summary><span>Gotchas / traps</span></summary><div>
 <div class="table"><table><thead><tr><th>Problem</th><th>Cause</th><th>Fix</th></tr></thead><tbody>
 <tr><td><code>loadstring</code> is not available</td><td><code>LoadStringEnabled</code> defaults to <code>false</code> and is server-only</td><td>Do not use it — we ship our own interpreter. See D-001</td></tr>
 <tr><td><code>require("@self/X")</code> fails under Lune</td><td>Not supported in Lune 0.10.5</td><td>Use <code>require("./X")</code></td></tr>
+<tr><td>Roblox's topbar buttons sit on top of our UI</td><td><code>ScreenGui.IgnoreGuiInset = true</code> draws under a bar that cannot be removed</td><td>Leave it <code>false</code>; the GUI then starts below the topbar</td></tr>
+<tr><td>Roblox's chat bar covers the room's instructions</td><td>Chat, player list, backpack and health are on by default</td><td><code>SetCoreGuiEnabled(Enum.CoreGuiType.All, false)</code>, <strong>and</strong> <code>TextChatService.ChatWindowConfiguration.Enabled = false</code> — the newer chat is a separate service the CoreGui call does not reach. Retry it: the call fails while the core scripts load, and spawn the retry so it cannot delay the room</td></tr>
 <tr><td>A thrown error arrives as a string in tests</td><td>Lune stringifies tables thrown out of a coroutine; Roblox does not</td><td>Catch inside the coroutine, never across it</td></tr>
 <tr><td><code>stylua</code> reformats and a test then fails</td><td>It shouldn't — but re-run the specs after formatting anyway</td><td><code>lune run tests/*.spec.luau</code> after every <code>stylua</code></td></tr>
 </tbody></table></div>
@@ -601,6 +627,7 @@ tools/                    scripts</code></pre>
 <div class="table"><table><thead><tr><th>Item</th><th>URL</th></tr></thead><tbody>
 <tr><td>Repo</td><td><code>~/Desktop/project/game/codebot</code> — not pushed yet</td></tr>
 <tr><td>Production</td><td>not published</td></tr>
+<tr><td>Project record</td><td><a href="https://luqman-docs.netlify.app/codebot/">https://luqman-docs.netlify.app/codebot/</a></td></tr>
 </tbody></table></div>
 </div></details>
 <details class="fold" id="references-external-documentation"><summary><span>External documentation</span></summary><div>
@@ -750,7 +777,49 @@ curl -s &quot;https://games.roblox.com/v1/games?universeIds=&lt;UNIVERSE_ID&gt;&
 <ul>
 <li><span class="box">to do</span> Luqman presses Play and says what is wrong with it — this is the first thing in the project that can only be judged by looking at it.</li>
 <li><span class="box">to do</span> M5: replace typing with the tap-to-build token palette, then test it on a phone.</li>
-</ul></div></details></div>
+</ul>
+<h3 id="log-2026-09-17-m5-writing-code-without-a-keyboard-and-the-pr">M5 — writing code without a keyboard, and the project record</h3>
+<h3 id="log-2026-09-17-what-was-done-5">What was done</h3>
+<ul>
+<li>Built the tap-to-build palette, which is the reason the game can be played at all on the device most Roblox players actually hold:</li>
+<ul>
+<li><code>src/shared/CodeBuilder.luau</code> — holds the taps, not the string, and assembles them into real Luau with correct spacing and automatic indentation.</li>
+<li><code>src/shared/Palette.luau</code> — which pieces each room offers, growing room by room.</li>
+<li><code>src/client/PaletteView.luau</code> — the buttons, laid out by hand so each is as wide as its own word rather than forced into a grid.</li>
+<li><code>CodePanel.luau</code> rebuilt: a tapped display, a TYPE toggle for keyboards, and a layout scaled from the height of the screen instead of fixed pixels.</li>
+</ul>
+<li>44 new checks. <strong>276 across the project.</strong></li>
+<li>Built Codebot's project record, <code>tools/docs/build_docs.py</code>, from the shared generator, and published it to <a href="https://luqman-docs.netlify.app/codebot/">https://luqman-docs.netlify.app/codebot/</a> — following the rule added to the global instructions today that every game keeps one and republishes it on any change.</li>
+<li>Commits <code>d786db1</code> and <code>b9329d8</code>.</li>
+</ul>
+<h3 id="log-2026-09-17-decisions-made-4">Decisions made</h3>
+<ul>
+<li>Nothing new beyond D-002, which this implements.</li>
+</ul>
+<h3 id="log-2026-09-17-what-was-learned-5">What was learned</h3>
+<ul>
+<li>Holding the taps rather than the finished text is what makes DELETE sensible: tapping <code>move()</code> once and deleting it once are symmetrical, and character deletion never would be.</li>
+<li>The auto-indent fell out of the same design for almost nothing, and may be the most valuable part — a player who was never taught to indent still arrives in Studio writing code that looks right.</li>
+<li>Codebot's record needed two changes to the shared generator: its screenshots cannot be taken by a script, and <code>header_comment()</code> had to learn Luau's <code>--</code> and <code>--[[ ]]</code> comments.</li>
+</ul>
+<h3 id="log-2026-09-17-still-not-true">Still not true</h3>
+<ul>
+<li><strong>Nobody has played this.</strong> Luqman has not pressed Play, and the palette has never been on a phone. Every claim about how it looks and feels is untested.</li>
+</ul>
+<h3 id="log-2026-09-17-next-5">Next</h3>
+<ul>
+<li><span class="box">to do</span> Press Play. Then a phone.</li>
+<li><span class="box">to do</span> M6: the ladder proper — progress and best-line-count saved with DataStore.</li>
+</ul>
+<h3 id="log-2026-09-17-first-time-it-was-played">First time it was played</h3>
+<p>Luqman pressed Play and sent a screenshot. The first thing anyone has seen of this game was Roblox's own interface sitting on top of it: the topbar buttons across the CODEBOT title and the ROOM line, and the chat bar across the room's instructions.</p>
+<p>Two causes, both mine:</p>
+<ul>
+<li><code>ScreenGui.IgnoreGuiInset = true</code>. Roblox's topbar cannot be removed, so ignoring the inset means drawing underneath it. Now <code>false</code>.</li>
+<li>Roblox's chat, player list, backpack and health bar were never turned off. There is no avatar in this game, so none of them mean anything. Turned off with <code>SetCoreGuiEnabled(Enum.CoreGuiType.All, false)</code> plus the newer <code>TextChatService</code> configuration, which that call does not reach. The call fails while the core scripts are loading, so it retries, spawned so it cannot delay the room appearing.</li>
+</ul>
+<p>Commit <code>5c18e5c</code>. <code>rojo serve</code> is now running on port 34872 so further fixes reach Studio without reopening the place.</p>
+<p><strong>The lesson is the obvious one and worth writing down anyway:</strong> 276 passing checks say nothing about whether the game is usable, and the very first thing a player saw was a problem no test could have had an opinion about.</p></div></details></div>
 </section>
 <section class="chapter" id="checks">
   <p class="kicker">What proves it works, from each file's own header comment</p>
@@ -760,7 +829,7 @@ curl -s &quot;https://games.roblox.com/v1/games?universeIds=&lt;UNIVERSE_ID&gt;&
 <section class="chapter" id="history">
   <p class="kicker">git log on main, newest first</p>
   <h2>Git history</h2>
-  <details class="fold"><summary><span>Every commit</span></summary><div><div class="table"><table><thead><tr><th>Commit</th><th>Date</th><th>Change</th></tr></thead><tbody><tr class=""><td><code>d786db1</code></td><td class="nowrap">2026-09-17</td><td>write code by tapping, so it can be played on a phone</td></tr><tr class=""><td><code>f1546c0</code></td><td class="nowrap">2026-09-17</td><td>build the room, the robot and the panel in Studio</td></tr><tr class=""><td><code>c779567</code></td><td class="nowrap">2026-09-17</td><td>add the stepping interpreter</td></tr><tr class=""><td><code>935f346</code></td><td class="nowrap">2026-09-17</td><td>add the parser and a tree viewer</td></tr><tr class=""><td><code>40ec8b5</code></td><td class="nowrap">2026-09-17</td><td>add a tool for viewing how code is tokenized</td></tr><tr class=""><td><code>c27fd01</code></td><td class="nowrap">2026-09-17</td><td>add project scaffold and the interpreter tokenizer</td></tr></tbody></table></div></div></details>
+  <details class="fold"><summary><span>Every commit</span></summary><div><div class="table"><table><thead><tr><th>Commit</th><th>Date</th><th>Change</th></tr></thead><tbody><tr class=""><td><code>5c18e5c</code></td><td class="nowrap">2026-09-17</td><td>stop Roblox&#x27;s own UI covering the game</td></tr><tr class=""><td><code>b9329d8</code></td><td class="nowrap">2026-09-17</td><td>add the project record and publish it</td></tr><tr class=""><td><code>d786db1</code></td><td class="nowrap">2026-09-17</td><td>write code by tapping, so it can be played on a phone</td></tr><tr class=""><td><code>f1546c0</code></td><td class="nowrap">2026-09-17</td><td>build the room, the robot and the panel in Studio</td></tr><tr class=""><td><code>c779567</code></td><td class="nowrap">2026-09-17</td><td>add the stepping interpreter</td></tr><tr class=""><td><code>935f346</code></td><td class="nowrap">2026-09-17</td><td>add the parser and a tree viewer</td></tr><tr class=""><td><code>40ec8b5</code></td><td class="nowrap">2026-09-17</td><td>add a tool for viewing how code is tokenized</td></tr><tr class=""><td><code>c27fd01</code></td><td class="nowrap">2026-09-17</td><td>add project scaffold and the interpreter tokenizer</td></tr></tbody></table></div></div></details>
 </section></main>
 </div>
 <!--mermaid-->
