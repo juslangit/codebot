@@ -126,7 +126,7 @@ details.fold > div { padding: 2px 0 18px 22px; }
   <p class="eyebrow"><b>Codebot</b><span>Project record · built 2026-09-17 from main</span></p>
   <h1>Codebot</h1>
   <p class="thesis">A Roblox game where you learn Luau by writing it. Your code is the controller: there is no joystick, you write <code>move()</code> and a robot walks one tile. Rooms are ordered so each introduces exactly one new idea, and other players solve the same room beside you with their robots visible. It exists because 4.38 million visits to a single-player lesson reader prove the demand and prove nobody stays.</p>
-  <div class="stats"><div class="stat"><b>339</b><span>Checks</span></div><div class="stat"><b>8</b><span>Rooms</span></div><div class="stat"><b>4113</b><span>Lines of Luau</span></div><div class="stat"><b>1495</b><span>Lines of interpreter</span></div><div class="stat"><b>8</b><span>Decisions</span></div><div class="stat"><b>12</b><span>Commits</span></div></div>
+  <div class="stats"><div class="stat"><b>339</b><span>Checks</span></div><div class="stat"><b>8</b><span>Rooms</span></div><div class="stat"><b>4113</b><span>Lines of Luau</span></div><div class="stat"><b>1495</b><span>Lines of interpreter</span></div><div class="stat"><b>8</b><span>Decisions</span></div><div class="stat"><b>13</b><span>Commits</span></div></div>
   
 </header>
 <section class="chapter notes" id="overview">
@@ -880,7 +880,37 @@ curl -s &quot;https://games.roblox.com/v1/games?universeIds=&lt;UNIVERSE_ID&gt;&
 <li>The fittings run along <strong>whichever way the room is longer</strong>. The first version spread them down the short side, which for room 4 — thirteen tiles wide, three deep — put every lamp at the two far ends and left the hall dark. Caught by reading the numbers back, not by a test.</li>
 <li><code>Lighting.Technology</code> cannot be set from a script. It is set to <code>Future</code> in <code>default.project.json</code> instead, which is the first time the Rojo project file has carried a property rather than just a path.</li>
 </ul>
-<p>Commit <code>cd0f4ac</code>. The Rojo server was restarted so the new Lighting entry reaches Studio.</p></div></details></div>
+<p>Commit <code>cd0f4ac</code>. The Rojo server was restarted so the new Lighting entry reaches Studio.</p>
+<h3 id="log-2026-09-17-m6-the-ladder-and-who-decides-what-counts">M6 — the ladder, and who decides what counts</h3>
+<h3 id="log-2026-09-17-what-was-done-6">What was done</h3>
+<ul>
+<li>Rooms now open one at a time. Room 1 is open to everyone and each solved room opens the next; a returning player starts on the first room they have not solved.</li>
+<li>Every room keeps the fewest lines that player has managed on it, shown under the room name.</li>
+<li><code>src/shared/Progress.luau</code> — the unlock rules and the profile, pure and tested.</li>
+<li><code>src/shared/Solution.luau</code> — one definition of <em>solved</em>, used by the client to talk to the player and by the server to decide what is recorded. The first file in <code>shared</code> to require its neighbours, so it carries the dual-target require, which worked as documented.</li>
+<li><code>src/server/init.server.luau</code> — DataStore, session profiles, autosave, and the two remotes.</li>
+<li>63 new checks. <strong>339 across the project.</strong></li>
+<li>Commit <code>146cf94</code>.</li>
+</ul>
+<h3 id="log-2026-09-17-decisions-made-5">Decisions made</h3>
+<ul>
+<li>D-007: a profile that failed to load is never saved over. Losing one session is a bad evening; overwriting a finished profile with an empty one is unrecoverable and looks to the player exactly like the game deleting their work.</li>
+<li>D-008: profile keys are strings, because a DataStore stores JSON and returns number keys as strings. <code>sanitize</code> accepts either, so anything an earlier version wrote still loads.</li>
+</ul>
+<h3 id="log-2026-09-17-what-was-learned-6">What was learned</h3>
+<ul>
+<li>Writing <code>Solution.run</code> once and calling it from both sides is what stops the client and the server ever disagreeing about whether a room was solved. Two implementations of the same rule is the shape of the enum bug that broke Referee For Fun's pricing for a fortnight.</li>
+<li>Everything arriving over a remote is checked for being the shape it claims to be before it is used, and a submission is capped three ways: length, steps and a cooldown. Running a player's program on the server is only safe because the interpreter hands it nothing.</li>
+</ul>
+<h3 id="log-2026-09-17-still-not-true-2">Still not true</h3>
+<ul>
+<li>Nobody has played any of this. Progress, unlocking and saving have never been exercised by a person, and DataStore cannot work at all until the place is published to Roblox with Studio API access switched on.</li>
+</ul>
+<h3 id="log-2026-09-17-next-6">Next</h3>
+<ul>
+<li><span class="box">to do</span> Publish the place so DataStore can work, then play through the ladder.</li>
+<li><span class="box">to do</span> M7: multiplayer — the room becomes the server's, and only the robots stay per player.</li>
+</ul></div></details></div>
 </section>
 <section class="chapter" id="checks">
   <p class="kicker">What proves it works, from each file's own header comment</p>
@@ -890,7 +920,7 @@ curl -s &quot;https://games.roblox.com/v1/games?universeIds=&lt;UNIVERSE_ID&gt;&
 <section class="chapter" id="history">
   <p class="kicker">git log on main, newest first</p>
   <h2>Git history</h2>
-  <details class="fold"><summary><span>Every commit</span></summary><div><div class="table"><table><thead><tr><th>Commit</th><th>Date</th><th>Change</th></tr></thead><tbody><tr class=""><td><code>146cf94</code></td><td class="nowrap">2026-09-17</td><td>save progress, and make the server check a solve before it counts</td></tr><tr class=""><td><code>133d823</code></td><td class="nowrap">2026-09-17</td><td>rebuild the project record</td></tr><tr class=""><td><code>cd0f4ac</code></td><td class="nowrap">2026-09-17</td><td>build the room the grid stands in</td></tr><tr class=""><td><code>2884f29</code></td><td class="nowrap">2026-09-17</td><td>rebuild the project record</td></tr><tr class=""><td><code>5c18e5c</code></td><td class="nowrap">2026-09-17</td><td>stop Roblox&#x27;s own UI covering the game</td></tr><tr class=""><td><code>b9329d8</code></td><td class="nowrap">2026-09-17</td><td>add the project record and publish it</td></tr><tr class=""><td><code>d786db1</code></td><td class="nowrap">2026-09-17</td><td>write code by tapping, so it can be played on a phone</td></tr><tr class=""><td><code>f1546c0</code></td><td class="nowrap">2026-09-17</td><td>build the room, the robot and the panel in Studio</td></tr><tr class=""><td><code>c779567</code></td><td class="nowrap">2026-09-17</td><td>add the stepping interpreter</td></tr><tr class=""><td><code>935f346</code></td><td class="nowrap">2026-09-17</td><td>add the parser and a tree viewer</td></tr><tr class=""><td><code>40ec8b5</code></td><td class="nowrap">2026-09-17</td><td>add a tool for viewing how code is tokenized</td></tr><tr class=""><td><code>c27fd01</code></td><td class="nowrap">2026-09-17</td><td>add project scaffold and the interpreter tokenizer</td></tr></tbody></table></div></div></details>
+  <details class="fold"><summary><span>Every commit</span></summary><div><div class="table"><table><thead><tr><th>Commit</th><th>Date</th><th>Change</th></tr></thead><tbody><tr class=""><td><code>09ac77c</code></td><td class="nowrap">2026-09-17</td><td>rebuild the project record</td></tr><tr class=""><td><code>146cf94</code></td><td class="nowrap">2026-09-17</td><td>save progress, and make the server check a solve before it counts</td></tr><tr class=""><td><code>133d823</code></td><td class="nowrap">2026-09-17</td><td>rebuild the project record</td></tr><tr class=""><td><code>cd0f4ac</code></td><td class="nowrap">2026-09-17</td><td>build the room the grid stands in</td></tr><tr class=""><td><code>2884f29</code></td><td class="nowrap">2026-09-17</td><td>rebuild the project record</td></tr><tr class=""><td><code>5c18e5c</code></td><td class="nowrap">2026-09-17</td><td>stop Roblox&#x27;s own UI covering the game</td></tr><tr class=""><td><code>b9329d8</code></td><td class="nowrap">2026-09-17</td><td>add the project record and publish it</td></tr><tr class=""><td><code>d786db1</code></td><td class="nowrap">2026-09-17</td><td>write code by tapping, so it can be played on a phone</td></tr><tr class=""><td><code>f1546c0</code></td><td class="nowrap">2026-09-17</td><td>build the room, the robot and the panel in Studio</td></tr><tr class=""><td><code>c779567</code></td><td class="nowrap">2026-09-17</td><td>add the stepping interpreter</td></tr><tr class=""><td><code>935f346</code></td><td class="nowrap">2026-09-17</td><td>add the parser and a tree viewer</td></tr><tr class=""><td><code>40ec8b5</code></td><td class="nowrap">2026-09-17</td><td>add a tool for viewing how code is tokenized</td></tr><tr class=""><td><code>c27fd01</code></td><td class="nowrap">2026-09-17</td><td>add project scaffold and the interpreter tokenizer</td></tr></tbody></table></div></div></details>
 </section></main>
 </div>
 <!--mermaid-->
