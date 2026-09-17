@@ -12,7 +12,7 @@ entry whose file is not there yet shows as a gap on the page, which doubles as t
 pictures still to take.
 
     python3 tools/docs/build_docs.py
-    python3 tools/docs/build_docs.py --publish                # and put it on the website
+    python3 tools/docs/build_docs.py --publish                # and rebuild the local records site
 
 The page is published as a website at SITE below. `docs-site publish` collects every
 project's docs/index.html and deploys them together, so the link never changes and
@@ -51,7 +51,7 @@ KNOWLEDGE = pathlib.Path(os.environ.get(
 OUT = PROJECT / "docs" / "index.html"
 
 NAME = "Codebot"
-SITE = "https://luqman-docs.netlify.app/codebot/"   # the page on the documentation website
+SITE = pathlib.Path.home() / "Documents/dev/docs-site/codebot/index.html"   # the built page on this machine
 
 # The picture at the top: (path from the project root, alt text).
 HERO = ("docs/shots/hero.png",
