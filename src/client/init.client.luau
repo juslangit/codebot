@@ -2,14 +2,16 @@
 --[[
 	The client. Loads a room, draws it, and runs whatever the player wrote.
 
-	The loop at the bottom of this file is the game:
+	The loop in `run` is the game:
 
 		step the interpreter  ->  highlight the line it just ran
 		                      ->  play whatever the robot did
 		                      ->  pause, and do it again
 
-	Everything above it exists to make that loop possible, and every piece of it
-	was already tested from a terminal before Studio was opened.
+	Solving a room is decided twice. Here, so the player is told immediately; and
+	again on the server, which runs the same code through the same interpreter
+	before writing anything down. The client's answer is for the player's eyes,
+	the server's answer is the one that counts.
 ]]
 
 local Players = game:GetService("Players")
@@ -18,12 +20,19 @@ local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
 local TextChatService = game:GetService("TextChatService")
 
-local Interpreter = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Interpreter")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Interpreter = Shared:WaitForChild("Interpreter")
 local Tokenizer = require(Interpreter:WaitForChild("Tokenizer"))
 local Parser = require(Interpreter:WaitForChild("Parser"))
 local Interp = require(Interpreter:WaitForChild("Interp"))
-local Rooms = require(ReplicatedStorage.Shared:WaitForChild("Rooms"))
-local RobotWorld = require(ReplicatedStorage.Shared:WaitForChild("RobotWorld"))
+local Rooms = require(Shared:WaitForChild("Rooms"))
+local RobotWorld = require(Shared:WaitForChild("RobotWorld"))
+local Progress = require(Shared:WaitForChild("Progress"))
+local Solution = require(Shared:WaitForChild("Solution"))
+
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local RequestProgress = Remotes:WaitForChild("RequestProgress") :: RemoteFunction
+local SubmitSolution = Remotes:WaitForChild("SubmitSolution") :: RemoteFunction
 
 local Theme = require(script.Theme)
 local RoomView = require(script.RoomView)
@@ -42,15 +51,9 @@ local world: any = nil
 local view: any = nil
 local running = false
 
-local function countLines(text: string): number
-	local count = 0
-	for line in string.gmatch(text .. "\n", "(.-)\n") do
-		if string.match(line, "%S") then
-			count += 1
-		end
-	end
-	return count
-end
+local profile = Progress.empty()
+local unlocked = 1
+local saving = false
 
 --[[
 	Turns off Roblox's own chat, player list, backpack and health bar. None of
@@ -97,6 +100,25 @@ local function setScene()
 	Lighting.FogEnd = 600
 end
 
+-- What the server told us, put through the same cleaning the server puts a
+-- stored profile through. The server is trusted, but the shape is checked
+-- anyway, because a mistake here would be a mistake about the player's history.
+local function applySummary(summary: any)
+	if type(summary) ~= "table" then
+		return
+	end
+	profile = Progress.sanitize({ best = summary.best }, Rooms.count())
+	unlocked = if type(summary.unlocked) == "number" then summary.unlocked else 1
+	saving = summary.saving == true
+end
+
+local function canGoNext(index: number): boolean
+	if index >= Rooms.count() then
+		return true -- the last room wraps back to the first
+	end
+	return (index + 1) <= unlocked
+end
+
 local function loadRoom(index: number)
 	if view then
 		view:destroy()
@@ -107,7 +129,8 @@ local function loadRoom(index: number)
 	view = RoomView.create(room, world, workspace)
 	view:focusCamera()
 
-	panel:setRoom(room, Rooms.count())
+	panel:setRoom(room, Rooms.count(), Progress.bestFor(profile, room.id))
+	panel:setNextLocked(not canGoNext(index))
 	panel:message(room.brief, "info")
 end
 
@@ -120,6 +143,54 @@ local function resetRoom()
 	panel:highlight(nil)
 	panel:setVariables({})
 	panel:message("Back to the start.", "info")
+end
+
+--[[
+	Tells the server what was written and waits for it to agree. Runs in its own
+	thread: the player has already seen the robot reach the goal, and should not
+	be left watching a frozen screen while a DataStore is written to.
+]]
+local function submit(index: number, code: string, used: number)
+	local room = Rooms.all()[index]
+	local ok, result = pcall(function()
+		return SubmitSolution:InvokeServer(index, code)
+	end)
+
+	if not ok or type(result) ~= "table" or not result.accepted then
+		-- The room was still solved on this screen; it just is not recorded.
+		panel:message(
+			string.format("Solved in %d lines. Par is %d. (Not saved.)", used, room.par),
+			"good"
+		)
+		return
+	end
+
+	Progress.record(profile, index, result.lines)
+	unlocked = if type(result.unlocked) == "number" then result.unlocked else unlocked
+	saving = result.saving == true
+
+	panel:setBest(result.best)
+	panel:setNextLocked(not canGoNext(index))
+
+	local text
+	if result.why == "improved" then
+		text = string.format("Solved in %d lines. Your best yet.", result.lines)
+	elseif result.why == "first" and result.lines <= room.par then
+		text = string.format("Solved in %d lines. That is par.", result.lines)
+	elseif result.why == "first" then
+		text = string.format("Solved in %d lines. It can be done in %d.", result.lines, room.par)
+	else
+		text = string.format("Solved in %d lines. Your best is %d.", result.lines, result.best)
+	end
+
+	if index < Rooms.count() and unlocked > index then
+		text ..= "  Room " .. (index + 1) .. " is open."
+	end
+	if not saving then
+		text ..= "  (Progress is not being saved.)"
+	end
+
+	panel:message(text, "good")
 end
 
 local function run()
@@ -187,18 +258,17 @@ local function run()
 
 	running = false
 	panel:setRunning(false)
+	panel:setNextLocked(not canGoNext(roomIndex))
 
 	if failure then
 		panel:highlight(failure.line)
 		panel:message(string.format("Line %d: %s", failure.line, failure.message), "bad")
 	elseif world:isSolved() then
-		local used = countLines(code)
-		local room = Rooms.all()[roomIndex]
-		local praise = if used <= room.par
-			then "Solved in " .. used .. " lines. That is par."
-			else "Solved in " .. used .. " lines. It can be done in " .. room.par .. "."
 		panel:highlight(nil)
-		panel:message(praise, "good")
+		local used = Solution.countLines(code)
+		panel:message(string.format("Solved in %d lines. Checking…", used), "good")
+		local index = roomIndex
+		task.spawn(submit, index, code, used)
 	else
 		panel:highlight(nil)
 		panel:message("The robot stopped before reaching the goal. Try again.", "info")
@@ -215,6 +285,10 @@ panel.onNext = function()
 	if running then
 		return
 	end
+	if not canGoNext(roomIndex) then
+		panel:message("Solve this room first, and the next one opens.", "info")
+		return
+	end
 	roomIndex = if roomIndex >= Rooms.count() then 1 else roomIndex + 1
 	loadRoom(roomIndex)
 end
@@ -223,11 +297,23 @@ panel.onPrev = function()
 	if running then
 		return
 	end
-	roomIndex = if roomIndex <= 1 then Rooms.count() else roomIndex - 1
+	roomIndex = if roomIndex <= 1 then math.min(unlocked, Rooms.count()) else roomIndex - 1
 	loadRoom(roomIndex)
 end
 
--- Spawned rather than called, so a slow retry cannot hold up the room appearing.
 task.spawn(hideRobloxUi)
 setScene()
+
+-- Ask the server what this player has already done, then start them on the
+-- first room they have not solved rather than back at the beginning.
+do
+	local ok, summary = pcall(function()
+		return RequestProgress:InvokeServer()
+	end)
+	if ok then
+		applySummary(summary)
+	end
+end
+
+roomIndex = math.clamp(unlocked, 1, Rooms.count())
 loadRoom(roomIndex)

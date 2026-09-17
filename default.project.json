@@ -6,6 +6,15 @@
       "$className": "ReplicatedStorage",
       "Shared": {
         "$path": "src/shared"
+      },
+      "Remotes": {
+        "$className": "Folder",
+        "RequestProgress": {
+          "$className": "RemoteFunction"
+        },
+        "SubmitSolution": {
+          "$className": "RemoteFunction"
+        }
       }
     },
     "ServerScriptService": {

@@ -202,6 +202,8 @@ function CodePanel.create(parent: Instance): Panel
 		innerPad = innerPad,
 		codePad = codePad,
 		builder = CodeBuilder.new(),
+		room = nil,
+		best = nil,
 		typing = false,
 		unit = 1,
 		lineHeight = 28,
@@ -423,10 +425,41 @@ function Panel.setTyping(self: Panel, typing: boolean)
 	self:refresh()
 end
 
-function Panel.setRoom(self: Panel, room: any, total: number)
+-- The line under the room name carries three things at once: what the room is
+-- teaching, what it can be done in, and what the player has managed so far.
+function Panel.refreshTeaches(self: Panel)
+	if not self.room then
+		return
+	end
+	local text = self.room.teaches .. "    par " .. self.room.par .. " lines"
+	if self.best then
+		text ..= "    your best " .. self.best
+	end
+	self.teachesLabel.Text = text
+end
+
+function Panel.setBest(self: Panel, best: number?)
+	self.best = best
+	self:refreshTeaches()
+end
+
+--[[
+	Locks or unlocks the way forward. A locked NEXT stays visible and says what to
+	do rather than disappearing, so the player can see there is more to come.
+]]
+function Panel.setNextLocked(self: Panel, locked: boolean)
+	self.nextButton.Text = if locked then "SOLVE THIS ROOM" else "NEXT ROOM"
+	self.nextButton.AutoButtonColor = not locked
+	self.nextButton.TextColor3 = if locked then Theme.textDim else Theme.text
+	self.nextButton.BackgroundColor3 = if locked then Theme.background else Theme.panel
+end
+
+function Panel.setRoom(self: Panel, room: any, total: number, best: number?)
+	self.room = room
+	self.best = best
 	self.roomLabel.Text =
 		string.format("ROOM %d OF %d  -  %s", room.id, total, string.upper(room.name))
-	self.teachesLabel.Text = room.teaches .. "    par " .. room.par .. " lines"
+	self:refreshTeaches()
 	self.briefLabel.Text = room.brief
 	self.builder:clear()
 	self.box.Text = ""
