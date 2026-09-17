@@ -78,15 +78,23 @@ local function hideRobloxUi()
 	end)
 end
 
+--[[
+	The room is indoors, so it is lit by the fittings on its own soffit rather
+	than by a sun. The sun is turned down almost to nothing and the ambient kept
+	low, which is what lets the cyan robot and the amber goal be the brightest
+	things on screen.
+]]
 local function setScene()
-	Lighting.Ambient = Color3.fromRGB(58, 66, 86)
-	Lighting.OutdoorAmbient = Color3.fromRGB(46, 54, 74)
-	Lighting.Brightness = 2
-	Lighting.ClockTime = 15
+	Lighting.Ambient = Color3.fromRGB(30, 36, 50)
+	Lighting.OutdoorAmbient = Color3.fromRGB(24, 29, 42)
+	Lighting.Brightness = 0.6
+	Lighting.EnvironmentDiffuseScale = 0.2
+	Lighting.EnvironmentSpecularScale = 0.35
+	Lighting.ClockTime = 3
 	Lighting.GlobalShadows = true
 	Lighting.FogColor = Theme.background
-	Lighting.FogStart = 120
-	Lighting.FogEnd = 420
+	Lighting.FogStart = 90
+	Lighting.FogEnd = 600
 end
 
 local function loadRoom(index: number)

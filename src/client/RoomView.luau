@@ -24,6 +24,12 @@ local RoomView = {}
 
 local TILE = 6
 local WALL_HEIGHT = 5
+-- The workshop around the room, so the grid is standing somewhere rather than
+-- floating in a void.
+local SHELL_MARGIN = TILE * 2
+local SHELL_HEIGHT = 30
+local SHELL_THICKNESS = 2
+local SOFFIT_DEPTH = TILE * 1.4
 local FLOOR_THICKNESS = 1
 local ROBOT_HEIGHT = 1.8
 local MOVE_TIME = 0.28
@@ -85,6 +91,133 @@ local function standingPosition(self: View): Vector3
 	return tileCentre(self, self.world.x, self.world.y) + Vector3.new(0, ROBOT_HEIGHT, 0)
 end
 
+--[[
+	Builds the room the grid stands in: a floor slab under it, four walls around
+	it, and a soffit of light fittings overhead.
+
+	The soffit is a ring rather than a full ceiling. The camera looks down into
+	the room from well above the walls, so a closed ceiling would simply be a
+	grey rectangle over the whole game. A ring gives the walls somewhere to stop
+	and somewhere for the lights to hang, and leaves the way in clear.
+]]
+local function buildShell(self: View, folder: Instance)
+	local halfX = (self.world.width * TILE) / 2 + SHELL_MARGIN
+	local halfZ = (self.world.height * TILE) / 2 + SHELL_MARGIN
+	local mid = SHELL_HEIGHT / 2 - 1
+
+	local slab = makePart("Slab", folder)
+	slab.Size = Vector3.new(halfX * 2, 2, halfZ * 2)
+	slab.Position = Vector3.new(0, -2, 0)
+	slab.Color = Theme.background
+	slab.Material = Enum.Material.Concrete
+
+	local walls = {
+		{
+			Vector3.new(halfX + 1, mid, 0),
+			Vector3.new(SHELL_THICKNESS, SHELL_HEIGHT, halfZ * 2 + 4),
+		},
+		{
+			Vector3.new(-halfX - 1, mid, 0),
+			Vector3.new(SHELL_THICKNESS, SHELL_HEIGHT, halfZ * 2 + 4),
+		},
+		{
+			Vector3.new(0, mid, halfZ + 1),
+			Vector3.new(halfX * 2 + 4, SHELL_HEIGHT, SHELL_THICKNESS),
+		},
+		{
+			Vector3.new(0, mid, -halfZ - 1),
+			Vector3.new(halfX * 2 + 4, SHELL_HEIGHT, SHELL_THICKNESS),
+		},
+	}
+	for _, spec in walls do
+		local wall = makePart("Shell", folder)
+		wall.Position = spec[1]
+		wall.Size = spec[2]
+		wall.Color = Theme.panel
+		wall.Material = Enum.Material.Metal
+	end
+
+	-- A stripe running round the walls at eye height, so a bare metal box reads
+	-- as a built room and the eye has something to measure depth against.
+	local stripeY = 7
+	local stripes = {
+		{ Vector3.new(halfX - 0.4, stripeY, 0), Vector3.new(0.4, 0.8, halfZ * 2) },
+		{ Vector3.new(-halfX + 0.4, stripeY, 0), Vector3.new(0.4, 0.8, halfZ * 2) },
+		{ Vector3.new(0, stripeY, halfZ - 0.4), Vector3.new(halfX * 2, 0.8, 0.4) },
+		{ Vector3.new(0, stripeY, -halfZ + 0.4), Vector3.new(halfX * 2, 0.8, 0.4) },
+	}
+	for _, spec in stripes do
+		local stripe = makePart("Stripe", folder)
+		stripe.Position = spec[1]
+		stripe.Size = spec[2]
+		stripe.Color = Theme.accentDim
+		stripe.Material = Enum.Material.Neon
+	end
+
+	-- The soffit: a ring around the top of the walls, with the lights on it.
+	local soffitY = SHELL_HEIGHT - 3
+	local soffits = {
+		{
+			Vector3.new(halfX - SOFFIT_DEPTH / 2, soffitY, 0),
+			Vector3.new(SOFFIT_DEPTH, 1.2, halfZ * 2),
+		},
+		{
+			Vector3.new(-halfX + SOFFIT_DEPTH / 2, soffitY, 0),
+			Vector3.new(SOFFIT_DEPTH, 1.2, halfZ * 2),
+		},
+		{
+			Vector3.new(0, soffitY, halfZ - SOFFIT_DEPTH / 2),
+			Vector3.new(halfX * 2, 1.2, SOFFIT_DEPTH),
+		},
+		{
+			Vector3.new(0, soffitY, -halfZ + SOFFIT_DEPTH / 2),
+			Vector3.new(halfX * 2, 1.2, SOFFIT_DEPTH),
+		},
+	}
+	for _, spec in soffits do
+		local soffit = makePart("Soffit", folder)
+		soffit.Position = spec[1]
+		soffit.Size = spec[2]
+		soffit.Color = Theme.panelLight
+		soffit.Material = Enum.Material.Metal
+	end
+
+	-- Light fittings in two rows, running along whichever way the room is longer.
+	-- Room 4 is a hall thirteen tiles wide and three deep; fittings spread down
+	-- the short side would have put every lamp at the two far ends and left the
+	-- hall itself dim.
+	local alongX = self.world.width >= self.world.height
+	local length = if alongX then halfX else halfZ
+	local across = if alongX then halfZ else halfX
+	local count = math.clamp(math.round(length / TILE), 2, 8)
+
+	for index = 1, count do
+		local alpha = (index - 0.5) / count
+		local along = -length + alpha * length * 2
+		for _, side in { 1, -1 } do
+			local offset = side * (across - SOFFIT_DEPTH / 2)
+			local fitting = makePart("Light", folder)
+			fitting.Size = if alongX
+				then Vector3.new(TILE * 1.2, 0.5, 1.6)
+				else Vector3.new(1.6, 0.5, TILE * 1.2)
+			fitting.Position = if alongX
+				then Vector3.new(along, soffitY - 0.9, offset)
+				else Vector3.new(offset, soffitY - 0.9, along)
+			fitting.Color = Theme.accent
+			fitting.Material = Enum.Material.Neon
+
+			local lamp = Instance.new("PointLight")
+			lamp.Brightness = 2.2
+			-- The soffit is nearly thirty studs above the floor, and 60 is as far
+			-- as a PointLight reaches.
+			lamp.Range = 60
+			lamp.Color = Color3.fromRGB(190, 232, 255)
+			lamp.Shadows = false
+			lamp.Parent = fitting
+		end
+	end
+end
+
 function RoomView.create(room: any, world: any, parent: Instance): View
 	local folder = Instance.new("Folder")
 	folder.Name = "Room" .. room.id
@@ -103,6 +236,8 @@ function RoomView.create(room: any, world: any, parent: Instance): View
 		yaw = YAW_FOR_DIRECTION[world.dir],
 		camera = workspace.CurrentCamera,
 	}, View)
+
+	buildShell(self, folder)
 
 	for y, row in room.map do
 		for x = 1, #row do
