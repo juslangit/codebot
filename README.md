@@ -24,15 +24,40 @@ Owning the interpreter is better than `loadstring` would have been anyway: it ca
 pause on line 4, highlight it, show `i = 3` and move the robot a single tile. That
 stepping is what teaches.
 
+## Opening it in Studio
+
+```bash
+rojo build -o codebot.rbxlx && open codebot.rbxlx
+```
+
+Press Play. The room, the robot and the panel are all built by code at run time —
+there is nothing to assemble by hand in Studio, and nothing in this repository is a
+binary you cannot read.
+
+To edit with Studio open, run `rojo serve` and connect from the Rojo plugin; files
+saved here appear in Studio a second later.
+
 ## Working on it
 
 ```bash
-lune run tests/Tokenizer.spec.luau   # run the tests, Studio closed
-stylua src/ tests/                   # format
-selene src/                          # lint
-rojo serve                           # live-sync into Studio
-rojo build -o codebot.rbxlx          # build a place file without Studio
+for f in tests/*.spec.luau; do lune run "$f"; done   # 232 checks, Studio closed
+stylua src/ tests/ tools/            # format
+selene src/ tools/                   # lint
+
+lune run tools/show_tokens.luau '<code>'   # how the code is cut up
+lune run tools/show_tree.luau   '<code>'   # the shape the parser makes
+lune run tools/run_code.luau    '<code>'   # watch it run, step by step
 ```
 
 The interpreter is plain Luau with no Roblox API in it, so the whole of it can be
-built and tested from the terminal before Studio is ever opened.
+built and tested from the terminal before Studio is ever opened. So are the rooms and
+the rules of the world — `RobotWorld.luau` knows where the walls are and `RoomView.luau`
+only draws the result, which is why a test can prove every room is solvable without
+anyone pressing Play.
+
+## The rooms
+
+Rooms are drawn as pictures in `src/shared/Rooms.luau` — `#` wall, `.` floor, `R` the
+robot, `G` the goal — so a room is readable in a diff and editing one means moving a
+character. Each introduces exactly one new idea, and a test runs every room's own
+intended solution and fails if it does not reach the goal.
