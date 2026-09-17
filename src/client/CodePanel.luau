@@ -38,7 +38,10 @@ function CodePanel.create(parent: Instance): Panel
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "Codebot"
 	gui.ResetOnSpawn = false
-	gui.IgnoreGuiInset = true
+	-- Roblox draws its own buttons across the top of the screen and they cannot
+	-- be removed. Respecting the inset means our panel starts below them instead
+	-- of under them, which is what was burying the title.
+	gui.IgnoreGuiInset = false
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = parent
 

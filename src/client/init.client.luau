@@ -15,6 +15,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
 
 local Interpreter = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Interpreter")
 local Tokenizer = require(Interpreter:WaitForChild("Tokenizer"))
@@ -48,6 +50,32 @@ local function countLines(text: string): number
 		end
 	end
 	return count
+end
+
+--[[
+	Turns off Roblox's own chat, player list, backpack and health bar. None of
+	them mean anything in this game, and the chat bar in particular sits exactly
+	where the room's instructions are.
+
+	SetCoreGuiEnabled fails if the core scripts have not finished loading, so it
+	is retried rather than called once and hoped for.
+]]
+local function hideRobloxUi()
+	for _ = 1, 60 do
+		local ok = pcall(function()
+			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+		end)
+		if ok then
+			break
+		end
+		task.wait(0.1)
+	end
+
+	-- The newer chat is a separate service and is not covered by the above.
+	pcall(function()
+		TextChatService.ChatWindowConfiguration.Enabled = false
+		TextChatService.ChatInputBarConfiguration.Enabled = false
+	end)
 end
 
 local function setScene()
@@ -191,5 +219,7 @@ panel.onPrev = function()
 	loadRoom(roomIndex)
 end
 
+-- Spawned rather than called, so a slow retry cannot hold up the room appearing.
+task.spawn(hideRobloxUi)
 setScene()
 loadRoom(roomIndex)
