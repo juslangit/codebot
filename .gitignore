@@ -1,0 +1,23 @@
+# secrets
+.env
+*.env
+
+# roblox / rojo build output
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+*.rbxm
+*.rbxmx
+
+# wally
+/Packages
+/DevPackages
+wally.lock
+
+# macos
+.DS_Store
+
+# editor
+.vscode/
+*.swp
